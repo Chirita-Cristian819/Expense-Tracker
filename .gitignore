@@ -32,3 +32,24 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local secrets ###
+.env
+.env.*
+application-local.properties
+
+### Claude Code (personal settings) ###
+.claude/settings.local.json
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Logs ###
+*.log
+
+### Personal notes ###
+src/main/resources/jpa-entity-cheatsheet.md
+
+### Grafana Config ###
+src/main/resources/logback-spring.xml
