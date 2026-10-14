@@ -6,12 +6,14 @@ import com.cristian.expensetracker.currencies.CurrencyEntity;
 import com.cristian.expensetracker.currencies.CurrencyRepository;
 import com.cristian.expensetracker.users.UserEntity;
 import com.cristian.expensetracker.users.UserRepository;
+import com.cristian.expensetracker.users.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -33,6 +35,7 @@ class RegistrationTests {
     private static final String TIMEZONE = "Europe/Bucharest";
 
     private UserRepository userRepository;
+    private UserService userService;
     private CurrencyRepository currencyRepository;
     private PasswordEncoder passwordEncoder;
     private RegistrationService service;
@@ -43,7 +46,8 @@ class RegistrationTests {
         userRepository = mock(UserRepository.class);
         currencyRepository = mock(CurrencyRepository.class);
         passwordEncoder = mock(PasswordEncoder.class);
-        service = new RegistrationService(userRepository, passwordEncoder, currencyRepository);
+        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+        service = new RegistrationService(userRepository, passwordEncoder, currencyRepository, authenticationManager, userService);
         usd = new CurrencyEntity();
     }
 

@@ -3,8 +3,12 @@ package com.cristian.expensetracker.registration;
 import com.cristian.expensetracker.currencies.CurrencyRepository;
 import com.cristian.expensetracker.users.UserEntity;
 import com.cristian.expensetracker.users.UserRepository;
+import com.cristian.expensetracker.users.UserService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -20,14 +24,22 @@ public class RegistrationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     private static final String DEFAULT_CURRENCY_CODE = "USD";
     private static final String DEFAULT_TIMEZONE = "UTC";
     private final CurrencyRepository currencyRepository;
+    private final UserService userService;
 
-    public RegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder, CurrencyRepository currencyRepository) {
+    public RegistrationService(UserRepository userRepository,
+                               PasswordEncoder passwordEncoder,
+                               CurrencyRepository currencyRepository,
+                               AuthenticationManager authenticationManager,
+                               UserService userService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.currencyRepository = currencyRepository;
+        this.authenticationManager = authenticationManager;
+        this.userService = userService;
     }
 
     public static String resolveTimezone(String requested) {
@@ -55,6 +67,15 @@ public class RegistrationService {
         } else {
             log.info("Duplicate email registration for user {}", checkForExistingEntity.getUserId());
         }
+    }
+
+    public Authentication loginUser(LoginRequestDTO loginRequestDTO){
+            String normalizedEmail = loginRequestDTO.email().trim().toLowerCase(Locale.ROOT);
+            String userPassword = loginRequestDTO.password();
+            Authentication authentication = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated(normalizedEmail, userPassword));
+            userService.checkUserIsEmailVerified(authentication.getName());
+            return authentication;
     }
 
 }

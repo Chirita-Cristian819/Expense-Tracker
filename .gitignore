@@ -54,3 +54,4 @@ Thumbs.db
 ### Grafana Config ###
 /src/main/resources/logback-spring.xml
 /src/main/resources/response-entity-cheatsheet.md
+/AGENTS.md

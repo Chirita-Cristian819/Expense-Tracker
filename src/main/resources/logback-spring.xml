@@ -1,0 +1,30 @@
+<configuration>
+    <!-- Keep Spring Boot's normal console output -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Send logs to Grafana Cloud Loki -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>https://logs-prod-039.grafana.net/loki/api/v1/push</url>
+            <auth>
+                <username>1801981</username>
+                <password>${LOKI_API_KEY}</password>
+            </auth>
+        </http>
+        <labels>
+            service_name = expense-tracker
+            app = expense-tracker
+            host = ${HOSTNAME}
+            level = %level
+        </labels>
+        <message>
+            <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </message>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOKI"/>
+    </root>
+</configuration>
