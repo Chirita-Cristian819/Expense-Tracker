@@ -16,13 +16,11 @@ public class CurrencyService {
         List<CurrencyEntity> currencies = currencyRepository.findAllByOrderByCurrencyNameAsc();
         return currencies.stream()
                          .map(c -> new CurrencyDTO(
-                                                           c.getCurrencyCode(),
-                                                           c.getCurrencyName(),
-                                                           c.getCurrencySymbol()
-                                                   ))
+                                 c.getCurrencyCode(),
+                                 c.getCurrencyName(),
+                                 c.getCurrencySymbol()
+                              ))
                          .toList();
     }
-
-
 
 }

@@ -1,6 +1,5 @@
 package com.cristian.expensetracker.expensecategories;
 
-import com.cristian.expensetracker.currencies.CurrencyDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public class ExpenseCategoryService {
     }
 
     public List<ExpenseCategoryDTO> getAllActiveExpenseCategories() {
-        return expenseCategoryRepository.findAllByIsActiveTrue()
+        return expenseCategoryRepository.findAllByIsActiveTrueOrderByExpenseCategoryNameAsc()
                                         .stream()
                                         .map(ec -> new ExpenseCategoryDTO(
                                             ec.getExpenseCategoryId(),

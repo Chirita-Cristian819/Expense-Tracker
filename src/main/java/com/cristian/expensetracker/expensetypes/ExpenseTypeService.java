@@ -1,9 +1,8 @@
 package com.cristian.expensetracker.expensetypes;
 
 import com.cristian.expensetracker.expensecategories.ExpenseCategoryRepository;
-import org.springframework.http.HttpStatus;
+import com.cristian.expensetracker.exceptions.ExpenseCategoryNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,9 +19,8 @@ public class ExpenseTypeService {
     }
 
     public List<ExpenseTypeDTO> getExpenseTypes(Long expenseCategoryId) {
-         //Unknown or inactive category -> 404
         if (!expenseCategoryRepository.existsByExpenseCategoryIdAndIsActiveTrue(expenseCategoryId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Expense category not found");
+            throw new ExpenseCategoryNotFoundException("Expense category %d not found".formatted(expenseCategoryId));
         }
 
         return expenseTypeRepository

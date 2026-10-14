@@ -75,5 +75,18 @@ public class UserEntity {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    public static UserEntity newUser(String displayName, String email, String passwordHash,
+                                     String timezone, CurrencyEntity preferredCurrency) {
+
+        UserEntity user = new UserEntity();
+        user.displayName = displayName;
+        user.email = email;
+        user.passwordHash = passwordHash;
+        user.timezone = timezone;
+        user.preferredCurrency = preferredCurrency;
+
+        return user;
+    }
+
 
 }

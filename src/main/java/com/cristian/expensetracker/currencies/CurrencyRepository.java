@@ -7,4 +7,5 @@ import java.util.List;
 public interface CurrencyRepository extends JpaRepository<CurrencyEntity, String> {
 
     List<CurrencyEntity> findAllByOrderByCurrencyNameAsc();
+    CurrencyEntity findByCurrencyCode(String currencyCode);
 }
