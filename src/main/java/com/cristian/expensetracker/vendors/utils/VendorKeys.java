@@ -1,4 +1,4 @@
-package com.cristian.expensetracker.vendors;
+package com.cristian.expensetracker.vendors.utils;
 
 import java.util.Locale;
 

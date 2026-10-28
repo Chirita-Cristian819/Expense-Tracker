@@ -18,6 +18,8 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
+import java.security.SecureRandom;
+
 @Configuration
 public class SecurityConfig {
 
@@ -25,6 +27,9 @@ public class SecurityConfig {
         public PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
         }
+
+        @Bean
+        public SecureRandom secureRandom() {return new SecureRandom();}
 
         @Bean
         public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
@@ -45,12 +50,14 @@ public class SecurityConfig {
             "/api/v1/expense-categories",
             "/api/v1/expense-categories/*/expense-types",
             "/api/v1/payment-methods",
-            "/api/v1/auth/csrf"
+            "/api/v1/auth/csrf",
+            "/api/v1/auth/verify-email"
         };
 
         private static final String[] PUBLIC_POST_ENDPOINTS = {
                 "/api/v1/auth/register",
-                "/api/v1/auth/login"
+                "/api/v1/auth/login",
+                "/api/v1/auth/resend-verification"
         };
 
         // Swagger UI + generated OpenAPI description (springdoc).

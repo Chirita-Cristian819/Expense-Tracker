@@ -1,7 +1,6 @@
 package com.cristian.expensetracker.vendors.tests;
 
-import com.cristian.expensetracker.vendors.VendorKeys;
-import org.junit.jupiter.api.Test;
+import com.cristian.expensetracker.vendors.utils.VendorKeys;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

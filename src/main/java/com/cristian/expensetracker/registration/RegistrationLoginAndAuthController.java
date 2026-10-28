@@ -1,5 +1,7 @@
 package com.cristian.expensetracker.registration;
 
+import com.cristian.expensetracker.apiresponses.SuccessCode;
+import com.cristian.expensetracker.apiresponses.SuccessResponse;
 import com.cristian.expensetracker.users.UserDTO;
 import com.cristian.expensetracker.users.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,9 +87,31 @@ public class RegistrationLoginAndAuthController {
 
     @GetMapping("/csrf")
     @Operation(summary = "Return CSRF token")
-    public  ResponseEntity<Void> csrfToken(CsrfToken token){
+    public ResponseEntity<Void> csrfToken(CsrfToken token){
         token.getToken();
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Send a verification email and create verification link")
+    @ApiResponse(responseCode = "204", description = "No Content")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Server unavailable")
+    public ResponseEntity<Void> sendVerificationEmail(
+            @Valid @RequestBody EmailVerificationDTO verificationRequest){
+        registrationService.checkEmailIsNotVerifiedAndSendVerificationEmail(verificationRequest);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("verify-email")
+    @Operation(summary = "Accesses the email verification link and confirms verification")
+    @ApiResponse(responseCode = "200", description = "Success")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Server unavailable")
+    public ResponseEntity<SuccessResponse> verifyEmail(@RequestParam String token){
+        registrationService.checkVerificationLinkAndVerifyEmail(token);
+        return ResponseEntity.ok(new SuccessResponse(SuccessCode.EMAIL_VERIFIED,
+                "Your email has been verified successfully!"));
     }
 
 

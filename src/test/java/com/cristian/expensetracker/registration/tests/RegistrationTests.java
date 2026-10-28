@@ -4,6 +4,8 @@ import com.cristian.expensetracker.registration.RegistrationService;
 import com.cristian.expensetracker.registration.RegisterRequestDTO;
 import com.cristian.expensetracker.currencies.CurrencyEntity;
 import com.cristian.expensetracker.currencies.CurrencyRepository;
+import com.cristian.expensetracker.registration.utils.EmailSendingService;
+import com.cristian.expensetracker.tokens.AuthTokenService;
 import com.cristian.expensetracker.users.UserEntity;
 import com.cristian.expensetracker.users.UserRepository;
 import com.cristian.expensetracker.users.UserService;
@@ -16,6 +18,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.security.SecureRandom;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -40,6 +43,14 @@ class RegistrationTests {
     private PasswordEncoder passwordEncoder;
     private RegistrationService service;
     private CurrencyEntity usd;
+    private EmailSendingService emailSendingService;
+    private final SecureRandom secureRandom;
+    private final AuthTokenService authTokenService;
+
+    RegistrationTests(SecureRandom secureRandom, AuthTokenService authTokenService) {
+        this.secureRandom = secureRandom;
+        this.authTokenService = authTokenService;
+    }
 
     @BeforeEach
     void setUp() {
@@ -47,14 +58,15 @@ class RegistrationTests {
         currencyRepository = mock(CurrencyRepository.class);
         passwordEncoder = mock(PasswordEncoder.class);
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
-        service = new RegistrationService(userRepository, passwordEncoder, currencyRepository, authenticationManager, userService);
+        service = new RegistrationService(userRepository, passwordEncoder, currencyRepository,
+                authenticationManager, userService, emailSendingService,secureRandom,authTokenService);
         usd = new CurrencyEntity();
     }
 
     @Test
     void newEmailSavesNormalizedUserWithDefaults() {
         when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(null);
+        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(Optional.empty());
         when(currencyRepository.findById("USD")).thenReturn(Optional.of(usd));
 
         service.registerUser(registrationRequest());
@@ -71,7 +83,7 @@ class RegistrationTests {
     @Test
     void existingEmailStillEncodesPasswordButDoesNotSaveUser() {
         when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(new UserEntity());
+        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(Optional.of(new UserEntity()));
 
         service.registerUser(registrationRequest());
         verify(passwordEncoder).encode(RAW_PASSWORD);
@@ -82,7 +94,7 @@ class RegistrationTests {
     @Test
     void integrityViolationFromSaveAndFlushIsNotPropagated() {
         when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(null);
+        when(userRepository.findByEmail(NORMALIZED_EMAIL)).thenReturn(Optional.empty());
         when(currencyRepository.findById("USD")).thenReturn(Optional.of(usd));
         when(userRepository.saveAndFlush(any(UserEntity.class)))
                 .thenThrow(new DataIntegrityViolationException("Simulated unique constraint violation"));
