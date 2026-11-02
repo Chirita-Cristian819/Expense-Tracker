@@ -1,8 +1,8 @@
 package com.cristian.expensetracker.registration;
 
 import com.cristian.expensetracker.currencies.CurrencyRepository;
+import com.cristian.expensetracker.emailsendrequests.EmailSendRequestService;
 import com.cristian.expensetracker.exceptions.InvalidVerificationTokenException;
-import com.cristian.expensetracker.registration.utils.EmailSendingService;
 import com.cristian.expensetracker.tokens.AuthTokenService;
 import com.cristian.expensetracker.tokens.TokenPurpose;
 import com.cristian.expensetracker.users.UserEntity;
@@ -19,10 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Base64;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -38,26 +36,23 @@ public class RegistrationService {
     private static final String DEFAULT_TIMEZONE = "UTC";
     private final CurrencyRepository currencyRepository;
     private final UserService userService;
-    private final EmailSendingService emailSendingService;
-    private final SecureRandom secureRandom;
     private final AuthTokenService authTokenService;
+    private final EmailSendRequestService emailSendRequestService;
 
     public RegistrationService(UserRepository userRepository,
                                PasswordEncoder passwordEncoder,
                                CurrencyRepository currencyRepository,
                                AuthenticationManager authenticationManager,
                                UserService userService,
-                               EmailSendingService emailSendingService,
-                               SecureRandom secureRandom,
-                               AuthTokenService authTokenService) {
+                               AuthTokenService authTokenService,
+                               EmailSendRequestService emailSendRequestService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.currencyRepository = currencyRepository;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.emailSendingService = emailSendingService;
-        this.secureRandom = secureRandom;
         this.authTokenService = authTokenService;
+        this.emailSendRequestService = emailSendRequestService;
     }
 
     public static String resolveTimezone(String requested) {
@@ -66,12 +61,6 @@ public class RegistrationService {
 
     public static String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
-    }
-
-    public String generateSecureRandomURL(int length) {
-        byte[] bytes = new byte[length];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     public void registerUser(@NonNull RegisterRequestDTO registerRequest) {
@@ -108,13 +97,14 @@ public class RegistrationService {
 
     @Transactional
     public void checkEmailIsNotVerifiedAndSendVerificationEmail(EmailVerificationDTO verificationRequest) {
-        String normalizedEmail = normalizeEmail(verificationRequest.email());
-        /*
+        /* Code implements an outbox pattern, on resend-verification API call, a new entry is created in the email_send_requests table;
         * 1. Check user exists and is not email verified:
-        * 2. Check user already has verification token in the database and delete the existing token if present
-        * 3. Generate a new token
-        * 4. Send email with latest generated token
+        * 2. Insert record in EmailSendRequests table with pending status for current user
+        *
+        * A scheduled job checkForPendingEmailsAndSendVerificationEmail
+        * from EmailSendRequestService class handles token generation and mail sending actions
         * */
+        String normalizedEmail = normalizeEmail(verificationRequest.email());
         Optional<UserEntity> existingUser = userRepository.findByEmail(normalizedEmail);
 
         if (existingUser.isEmpty()) {
@@ -128,15 +118,8 @@ public class RegistrationService {
             return;
         }
 
-        String TOKEN_PATH = "/api/v1/auth/verify-email?token=";
-        String generatedToken = generateSecureRandomURL(32);
-        OffsetDateTime expiryDate =  OffsetDateTime.now(ZoneId.of("UTC")).plusDays(1);
+        emailSendRequestService.createEmailSendRequestIfNonePending(user, TokenPurpose.EMAIL_VERIFICATION);
 
-        authTokenService.checkUserHasMailVerificationTokensAndDeleteThem(user);
-        authTokenService.createNewToken(user, TokenPurpose.EMAIL_VERIFICATION,
-                                generatedToken, expiryDate);
-        emailSendingService.sendVerificationEmail(normalizedEmail,
-                TOKEN_PATH + generatedToken);
     }
 
     @Transactional

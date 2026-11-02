@@ -1,10 +1,11 @@
 package com.cristian.expensetracker.registration.tests;
 
+import com.cristian.expensetracker.emailsendrequests.EmailSendRequestService;
 import com.cristian.expensetracker.registration.RegistrationService;
 import com.cristian.expensetracker.registration.RegisterRequestDTO;
 import com.cristian.expensetracker.currencies.CurrencyEntity;
 import com.cristian.expensetracker.currencies.CurrencyRepository;
-import com.cristian.expensetracker.registration.utils.EmailSendingService;
+import com.cristian.expensetracker.emailsendrequests.utils.EmailSender;
 import com.cristian.expensetracker.tokens.AuthTokenService;
 import com.cristian.expensetracker.users.UserEntity;
 import com.cristian.expensetracker.users.UserRepository;
@@ -14,11 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.security.SecureRandom;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -43,13 +44,13 @@ class RegistrationTests {
     private PasswordEncoder passwordEncoder;
     private RegistrationService service;
     private CurrencyEntity usd;
-    private EmailSendingService emailSendingService;
-    private final SecureRandom secureRandom;
+    private EmailSender emailSender;
     private final AuthTokenService authTokenService;
+    private final EmailSendRequestService emailSendRequestService;
 
-    RegistrationTests(SecureRandom secureRandom, AuthTokenService authTokenService) {
-        this.secureRandom = secureRandom;
+    RegistrationTests(AuthTokenService authTokenService, EmailSendRequestService emailSendRequestService) {
         this.authTokenService = authTokenService;
+        this.emailSendRequestService = emailSendRequestService;
     }
 
     @BeforeEach
@@ -59,7 +60,7 @@ class RegistrationTests {
         passwordEncoder = mock(PasswordEncoder.class);
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         service = new RegistrationService(userRepository, passwordEncoder, currencyRepository,
-                authenticationManager, userService, emailSendingService,secureRandom,authTokenService);
+                authenticationManager, userService,authTokenService, emailSendRequestService);
         usd = new CurrencyEntity();
     }
 

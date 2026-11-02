@@ -1,9 +1,11 @@
-package com.cristian.expensetracker.security;
+package com.cristian.expensetracker.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,6 +22,8 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 import java.security.SecureRandom;
 
+@EnableScheduling
+@EnableAsync
 @Configuration
 public class SecurityConfig {
 

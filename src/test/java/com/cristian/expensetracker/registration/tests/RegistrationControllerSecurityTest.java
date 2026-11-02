@@ -3,7 +3,7 @@ package com.cristian.expensetracker.registration.tests;
 import com.cristian.expensetracker.registration.RegisterRequestDTO;
 import com.cristian.expensetracker.registration.RegistrationLoginAndAuthController;
 import com.cristian.expensetracker.registration.RegistrationService;
-import com.cristian.expensetracker.security.SecurityConfig;
+import com.cristian.expensetracker.config.SecurityConfig;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

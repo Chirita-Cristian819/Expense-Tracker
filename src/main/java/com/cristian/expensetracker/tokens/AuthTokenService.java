@@ -19,14 +19,14 @@ public class AuthTokenService {
         this.authTokenRepository = authTokenRepository;
     }
 
-    public void checkUserHasMailVerificationTokensAndDeleteThem(UserEntity user){
-        authTokenRepository.deleteByUserAndPurposeAndUsedAtIsNull(user, TokenPurpose.EMAIL_VERIFICATION);
+    public void checkUserHasMailVerificationTokensAndDeleteThem(UserEntity user, Long tokenId) {
+        authTokenRepository.deleteByUserAndPurposeAndUsedAtIsNullAndTokenIdIsNot(user, TokenPurpose.EMAIL_VERIFICATION, tokenId);
     }
 
-    public void createNewToken(UserEntity user, TokenPurpose tokenPurpose, String generatedToken, OffsetDateTime expiryDate) {
-        authTokenRepository.saveAndFlush(
+    public Long createNewToken(UserEntity user, TokenPurpose tokenPurpose, String generatedToken, OffsetDateTime expiryDate) {
+        return authTokenRepository.saveAndFlush(
                 AuthTokenEntity.newToken(user, tokenPurpose, hashToken(generatedToken), expiryDate)
-        );
+        ).getTokenId();
     }
 
     public boolean checkTokenIsValid(String token, TokenPurpose tokenPurpose){

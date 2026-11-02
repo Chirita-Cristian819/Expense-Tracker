@@ -1,4 +1,4 @@
-package com.cristian.expensetracker.security;
+package com.cristian.expensetracker.config;
 
 import com.cristian.expensetracker.users.UserEntity;
 import com.cristian.expensetracker.users.UserRepository;
@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {
